@@ -15,6 +15,7 @@ class ClockApp:
         self.root.title("Clock App")
         self.root.configure(bg="#2E2E2E")
         self.alarms = []
+        self.timer_app = None  # Mantener una referencia al objeto Timer
         self.create_main_interface()
         self.update_clock()
 
@@ -81,9 +82,20 @@ class ClockApp:
         self.timer_frame = tk.Frame(self.root, bg="#2E2E2E")
         self.timer_frame.pack(pady=10)
 
-        tk.Label(self.timer_frame, text="Set Timer (seconds):", bg="#2E2E2E", fg="#FFFFFF", font=("Helvetica", 12)).pack(pady=5)
-        self.timer_entry = tk.Entry(self.timer_frame, bg="#4A4A4A", fg="#FFFFFF", insertbackground="#FFFFFF", font=("Helvetica", 12))
-        self.timer_entry.pack(pady=5)
+        tk.Label(self.timer_frame, text="Set Timer:", bg="#2E2E2E", fg="#FFFFFF", font=("Helvetica", 12)).pack(pady=5)
+
+        # Entry fields for time input
+        self.timer_hour_entry = tk.Entry(self.timer_frame, width=5, bg="#4A4A4A", fg="#FFFFFF", insertbackground="#FFFFFF", font=("Helvetica", 12))
+        self.timer_hour_entry.pack(side=tk.LEFT, padx=5)
+        tk.Label(self.timer_frame, text="HH", bg="#2E2E2E", fg="#FFFFFF", font=("Helvetica", 12)).pack(side=tk.LEFT)
+
+        self.timer_minute_entry = tk.Entry(self.timer_frame, width=5, bg="#4A4A4A", fg="#FFFFFF", insertbackground="#FFFFFF", font=("Helvetica", 12))
+        self.timer_minute_entry.pack(side=tk.LEFT, padx=5)
+        tk.Label(self.timer_frame, text="MM", bg="#2E2E2E", fg="#FFFFFF", font=("Helvetica", 12)).pack(side=tk.LEFT)
+
+        self.timer_second_entry = tk.Entry(self.timer_frame, width=5, bg="#4A4A4A", fg="#FFFFFF", insertbackground="#FFFFFF", font=("Helvetica", 12))
+        self.timer_second_entry.pack(side=tk.LEFT, padx=5)
+        tk.Label(self.timer_frame, text="SS", bg="#2E2E2E", fg="#FFFFFF", font=("Helvetica", 12)).pack(side=tk.LEFT)
 
         button_style = {"bg": "#4A4A4A", "fg": "#FFFFFF", "activebackground": "#6E6E6E", "activeforeground": "#FFFFFF",
                         "bd": 0, "width": 20, "font": ("Helvetica", 12)}
@@ -111,6 +123,16 @@ class ClockApp:
         tk.Button(self.pomodoro_frame, text="Start Pomodoro", command=self.start_pomodoro, **button_style).pack(pady=5)
         tk.Button(self.pomodoro_frame, text="Stop Pomodoro", command=self.stop_pomodoro, **button_style).pack(pady=5)
         tk.Button(self.pomodoro_frame, text="Back", command=self.create_main_interface, **button_style).pack(pady=5)
+        tk.Button(self.timer_frame, text="Back", command=self.close_timer_interface, **button_style).pack(pady=5)
+
+    def close_timer_interface(self):
+        # Detener y destruir la instancia del temporizador si existe
+        if self.timer_app:
+            self.timer_app.stop_timer()
+            self.timer_app = None
+
+        # Volver a la interfaz principal
+        self.create_main_interface()
 
     def clear_frame(self):
         if hasattr(self, 'main_frame'):
@@ -167,9 +189,9 @@ class ClockApp:
             messagebox.showerror("Error", "Please enter a valid number for seconds.")
             return
 
-        self.timer_app = Timer(self.root)  # Inicializar el temporizador
+        self.timer_app = Timer(self.timer_frame)  # Inicializar el temporizador
         self.timer_app.remaining_time = duration  # Establecer la duración del temporizador
-        self.timer_app.start_timer()  # Iniciar el temporizador
+        self.timer_app.start_timer()
 
     def timer_callback(self):
         messagebox.showinfo("Timer", "Time's up!")
@@ -190,9 +212,8 @@ class ClockApp:
             self.pomodoro.stop()
 
     def update_clock(self):
-        current_time = time.strftime("%H:%M:%S")
-        self.canvas.delete("all")
-        self.canvas.create_text(100, 100, text=current_time, fill="#FFFFFF", font=("Helvetica", 24, "bold"))
+        now = time.localtime()
+        self.draw_clock(now)
         self.root.after(1000, self.update_clock)
 
     def draw_clock(self, now):
@@ -222,6 +243,16 @@ class ClockApp:
         end_y = y - length * cos(angle)
         self.canvas.create_line(x, y, end_x, end_y, width=2, fill=color)
 
+    def clear_frame(self):
+        if hasattr(self, 'main_frame'):
+            self.main_frame.destroy()
+        if hasattr(self, 'alarm_frame'):
+            self.alarm_frame.destroy()
+        if hasattr(self, 'timer_frame'):
+            self.timer_frame.destroy()
+        if hasattr(self, 'pomodoro_frame'):
+            self.pomodoro_frame.destroy()
+            
 if __name__ == "__main__":
     root = tk.Tk()
     clock_app = ClockApp(root)
