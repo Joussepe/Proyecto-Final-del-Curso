@@ -1,12 +1,12 @@
 # pomodoro.py
 
 from timer import Timer
-from config import POMODORO_WORK_TIME, POMODORO_BREAK_TIME
+from config import DEFAULT_POMODORO_WORK_TIME, DEFAULT_POMODORO_BREAK_TIME
 
 class Pomodoro:
-    def __init__(self, work_callback, break_callback):
-        self.work_timer = Timer(POMODORO_WORK_TIME, work_callback)
-        self.break_timer = Timer(POMODORO_BREAK_TIME, break_callback)
+    def __init__(self, work_time, break_time, work_callback, break_callback):
+        self.work_timer = Timer(work_time, work_callback)
+        self.break_timer = Timer(break_time, break_callback)
 
     def start_work(self):
         self.work_timer.start()

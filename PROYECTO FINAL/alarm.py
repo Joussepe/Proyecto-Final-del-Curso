@@ -1,27 +1,41 @@
 # alarm.py
 
-import time
 import threading
-from playsound import playsound
-from config import ALARM_SOUND
+import time
+import pygame
+from tkinter import messagebox
 
-class Alarm:
-    def __init__(self, alarm_time, callback):
-        self.alarm_time = alarm_time
-        self.callback = callback
-        self.thread = threading.Thread(target=self.run)
+class Alarm(threading.Thread):
+    def __init__(self, label, time, sound_file):
+        super().__init__()
+        self.label = label
+        self.time = time
+        self.sound_file = sound_file
+        self.is_playing = False
+        self.is_running = True
 
     def run(self):
-        while True:
-            current_time = time.strftime("%H:%M")
-            if current_time == self.alarm_time:
-                self.callback()
+        while self.is_running:
+            now = time.strftime('%H:%M', time.localtime())
+            if now == self.time:
+                self.play_alarm()
                 break
             time.sleep(1)
 
-    def start(self):
-        self.thread.start()
+    def play_alarm(self):
+        if not self.is_playing:
+            pygame.init()
+            pygame.mixer.music.load(self.sound_file)
+            pygame.mixer.music.play(loops=-1)
+            self.is_playing = True
+            messagebox.showinfo("Alarm", f"Time's up! Alarm: {self.label}")
+
+            # Mostrar opciones de posponer o cancelar
+            choice = messagebox.askyesno("Alarm", f"Would you like to snooze for 1 minute?")
+            if choice:
+                time.sleep(60)  # Pausar durante 1 minuto y luego detener el sonido
+            pygame.mixer.music.stop()
+            self.is_playing = False
 
     def stop(self):
-        if self.thread.is_alive():
-            self.thread.join()
+        self.is_running = False
